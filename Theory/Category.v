@@ -35,30 +35,68 @@ Reserved Infix "∘" (at level 40, left associativity).
   Categories (as distinct from Category/~) are identified by [homset :=
   Morphism_equality]. *)
 
+Module ColoredMonoid.
+
+  Class t (obj : Type) := {
+    uhom := Type : Type;
+    hom : obj -> obj -> uhom where "a ~> b" := (hom a b);
+    homset :> ∀ X Y, Setoid (X ~> Y);
+
+    id {x} : x ~> x;
+    compose {x y z} (f: y ~> z) (g : x ~> y) : x ~> z
+      where "f ∘ g" := (compose f g);
+
+    compose_respects x y z :>
+      Proper (equiv ==> equiv ==> equiv) (@compose x y z);
+
+    dom {x y} (f: x ~> y) := x;
+    cod {x y} (f: x ~> y) := y;
+
+    id_left  {x y} (f : x ~> y) : id ∘ f ≈ f;
+    id_right {x y} (f : x ~> y) : f ∘ id ≈ f;
+
+    comp_assoc {x y z w} (f : z ~> w) (g : y ~> z) (h : x ~> y) :
+      f ∘ (g ∘ h) ≈ (f ∘ g) ∘ h;
+    comp_assoc_sym {x y z w} (f : z ~> w) (g : y ~> z) (h : x ~> y) :
+      (f ∘ g) ∘ h ≈ f ∘ (g ∘ h)
+  }.
+
+End ColoredMonoid.
+
+Export ColoredMonoid (dom, cod).
+
 Class Category := {
   obj : Type;
 
   uhom := Type : Type;
-  hom : obj -> obj -> uhom where "a ~> b" := (hom a b);
-  homset :> ∀ X Y, Setoid (X ~> Y);
+  hom : obj -> obj -> uhom;
+  homset : ∀ X Y, Setoid (hom X Y);
 
-  id {x} : x ~> x;
-  compose {x y z} (f: y ~> z) (g : x ~> y) : x ~> z
-    where "f ∘ g" := (compose f g);
+  id {x} : hom x x;
+  compose {x y z} (f: hom y z) (g : hom x y) : hom x z;
 
-  compose_respects x y z :>
+  compose_respects x y z :
     Proper (equiv ==> equiv ==> equiv) (@compose x y z);
 
-  dom {x y} (f: x ~> y) := x;
-  cod {x y} (f: x ~> y) := y;
+  id_left  {x y} (f : hom x y) : compose id f ≈ f;
+  id_right {x y} (f : hom x y) : compose f id ≈ f;
 
-  id_left  {x y} (f : x ~> y) : id ∘ f ≈ f;
-  id_right {x y} (f : x ~> y) : f ∘ id ≈ f;
+  comp_assoc {x y z w} (f : hom z w) (g : hom y z) (h : hom x y) :
+    compose f (compose g h) ≈ compose (compose f g) h;
+  comp_assoc_sym {x y z w} (f : hom z w) (g : hom y z) (h : hom x y) :
+    compose (compose f g) h ≈ compose f (compose g h);
 
-  comp_assoc {x y z w} (f : z ~> w) (g : y ~> z) (h : x ~> y) :
-    f ∘ (g ∘ h) ≈ (f ∘ g) ∘ h;
-  comp_assoc_sym {x y z w} (f : z ~> w) (g : y ~> z) (h : x ~> y) :
-    (f ∘ g) ∘ h ≈ f ∘ (g ∘ h)
+  colored_monoid :> ColoredMonoid.t obj := {|
+    ColoredMonoid.hom := hom;
+    ColoredMonoid.homset := homset;
+    ColoredMonoid.id := @id;
+    ColoredMonoid.compose := @compose;
+    ColoredMonoid.compose_respects := compose_respects;
+    ColoredMonoid.id_left := @id_left;
+    ColoredMonoid.id_right := @id_right;
+    ColoredMonoid.comp_assoc := @comp_assoc;
+    ColoredMonoid.comp_assoc_sym := @comp_assoc_sym;
+  |};
 }.
 
 Declare Scope category_scope.
@@ -69,48 +107,49 @@ Declare Scope morphism_scope.
 Bind Scope category_scope with Category.
 Bind Scope object_scope with obj.
 Bind Scope homset_scope with hom.
+Bind Scope homset_scope with ColoredMonoid.hom.
 
 Delimit Scope category_scope with category.
 Delimit Scope object_scope with object.
 Delimit Scope homset_scope with homset.
 Delimit Scope morphism_scope with morphism.
 
-Arguments dom {_%category _%object _%object} _%morphism.
-Arguments cod {_%category _%object _%object} _%morphism.
+Arguments ColoredMonoid.dom {_%category _%category _%object _%object} _%morphism.
+Arguments ColoredMonoid.cod {_%category _%category _%object _%object} _%morphism.
 
 Notation "obj[ C ]" := (@obj C%category)
   (at level 0, format "obj[ C ]") : type_scope.
-Notation "hom[ C ]" := (@hom C%category)
+Notation "hom[ C ]" := (@ColoredMonoid.hom C%category)
   (at level 0, format "hom[ C ]") : type_scope.
 
-Notation "x ~> y" := (@hom _%category x%object y%object)
+Notation "x ~> y" := (@ColoredMonoid.hom _%category _%category x%object y%object)
   (at level 90, right associativity) : homset_scope.
-Notation "x ~{ C }~> y" := (@hom C%category x%object y%object)
+Notation "x ~{ C }~> y" := (@ColoredMonoid.hom _%category C%category x%object y%object)
   (at level 90) : homset_scope.
 
-Notation "x <~ y" := (@hom _%category y%object x%object)
+Notation "x <~ y" := (@ColoredMonoid.hom _%category _%category y%object x%object)
   (at level 90, right associativity, only parsing) : homset_scope.
-Notation "x <~{ C }~ y" := (@hom C%category y%object x%object)
+Notation "x <~{ C }~ y" := (@ColoredMonoid.hom _%category C%category y%object x%object)
   (at level 90, only parsing) : homset_scope.
 
-Notation "id[ x ]" := (@id _%category x%object)
+Notation "id[ x ]" := (@ColoredMonoid.id _%category _%category x%object)
   (at level 9, format "id[ x ]") : morphism_scope.
 
-Notation "id{ C }" := (@id C%category _%object)
+Notation "id{ C }" := (@ColoredMonoid.id _%category C%category _%object)
   (at level 9, format "id{ C }") : morphism_scope.
 
 Notation "f ∘ g" :=
-  (@compose _%category _%object _%object _%object f%morphism g%morphism)
+  (@ColoredMonoid.compose _%category _%category _%object _%object _%object f%morphism g%morphism)
   : morphism_scope.
 Notation "f ∘[ C ] g" :=
-  (@compose C%category _%object _%object _%object f%morphism g%morphism)
+  (@ColoredMonoid.compose _%category C%category _%object _%object _%object f%morphism g%morphism)
   (at level 40, only parsing) : morphism_scope.
 
 Notation "f ≈[ C ] g" :=
-  (@equiv _ (@homset C%category _%object _%object) f%morphism g%morphism)
+  (@equiv _ (@ColoredMonoid.homset _%category C%category _%object _%object) f%morphism g%morphism)
   (at level 79, only parsing) : category_theory_scope.
 Notation "f ≈[ C ] g" :=
-  (@equiv _ (@homset C%category _%object _%object) f%morphism g%morphism)
+  (@equiv _ (@ColoredMonoid.homset _%category C%category _%object _%object) f%morphism g%morphism)
   (at level 79, only parsing) : category_theory_scope.
 
 Notation "f << A ~~> B >> g" :=
@@ -169,6 +208,8 @@ Section Category.
 
 Context {C : Category}.
 
+Print Term dom.
+
 Corollary dom_id {x : C} : dom (@id C x) = x.
 Proof. auto. Qed.
 
@@ -185,8 +226,8 @@ Proof. split; auto. Qed.
 
 End Category.
 
-Arguments dom {_%category _%object _%object} _%morphism.
-Arguments cod {_%category _%object _%object} _%morphism.
+Arguments dom {_%category _%category _%object _%object} _%morphism.
+Arguments cod {_%category _%category _%object _%object} _%morphism.
 Arguments id_left {_%category _%object _%object} _%morphism.
 Arguments id_right {_%category _%object _%object} _%morphism.
 Arguments comp_assoc {_%category _%object _%object _%object _%object}
