@@ -12,8 +12,6 @@ Set Primitive Projections.
 Set Universe Polymorphism.
 Unset Transparent Obligations.
 
-Print fobj.
-
 Definition HomAddDependentSort `(C : Category) (arity: C ⟶ Sets) (x y: option C) :=
   match x with
     | None => match y with
@@ -25,6 +23,36 @@ Definition HomAddDependentSort `(C : Category) (arity: C ⟶ Sets) (x y: option 
         | Some d => c ~> d
       end
   end.
+
+Ltac destruct_dependent_sort := match goal with
+  | [ |- context[HomAddDependentSort _ _ ?X] ] =>
+    lazymatch X with
+      | Some _ => fail
+      | None => fail
+      | _ => idtac "boo" X; destruct X
+    end
+  | [ |- context[HomAddDependentSort _ _ _ ?X] ] =>
+    lazymatch X with
+      | Some _ => fail
+      | None => fail
+      | _ => idtac "hiss" X; destruct X
+    end
+  | [ H: context[HomAddDependentSort _ _ ?X ] |- _] =>
+    lazymatch X with
+      | Some _ => fail
+      | None => fail
+      | _ => idtac "buu" X; destruct X
+    end
+  | [ H: context[HomAddDependentSort _ _ _ ?X ] |- _] =>
+    lazymatch X with
+      | Some _ => fail
+      | None => fail
+      | _ => idtac "hyss" X; destruct X
+    end
+end.
+
+Hint Extern 1 (HomAddDependentSort _ _ _ _) => destruct_dependent_sort : core.
+Hint Extern 3 => destruct_dependent_sort : core.
 
 Global Program Instance HomAddDependentSort_Setoid `(C : Category) (arity: C ⟶ Sets) (x y: option C)
   : Setoid (HomAddDependentSort C arity x y) := {|
@@ -41,10 +69,7 @@ Global Program Instance HomAddDependentSort_Setoid `(C : Category) (arity: C ⟶
 |}.
 
 Next Obligation.
-  equivalence.
-  - now case x, y.
-  - case x, y; solve [easy | now symmetry].
-  - case x, y; solve [easy | now transitivity y0].
+  equivalence. now repeat destruct_dependent_sort.
 Qed.
 
 (* automate away all the trivial cases *)
@@ -65,34 +90,29 @@ Program Definition AddDependentSort `(C : Category) (arity: C ⟶ Sets) : Catego
   |}.
 
 Next Obligation.
-  proper.
-  case x, y, z in * |- *; simpl in * |- *; try easy.
-  - now rewrite H, H0.
-  - transitivity (fmap[arity] x0 y1).
-    * now apply (proper_morphism).
-    * apply (fun k => k y1). now apply (fmap_respects (Functor := arity)).
+  intros f0 f1 f0_eq_f1 g0 g1 g0_eq_g1.
+  repeat destruct_dependent_sort; try rewrite f0_eq_f1, g0_eq_g1; try easy; simpl.
+  transitivity (fmap[arity] f0 g1).
+  - now apply (proper_morphism).
+  - apply (fun k => k g1). now apply (fmap_respects (Functor := arity)).
 Qed.
 
 Next Obligation.
-  case x, y; simpl.
-  - apply id_left.
-  - easy.
-  - apply (fmap_id (Functor := arity) f).
-  - easy.
+  repeat destruct_dependent_sort; simpl; now try first [ apply id_left | apply (fmap_id (Functor := arity) f) ].
 Qed.
 
 Next Obligation.
-  case x, y; simpl; solve [apply id_right | easy].
+  repeat destruct_dependent_sort; solve [apply id_right | easy].
 Qed.
 
 Next Obligation.
-  case x, y, z, w; simpl; first [easy | apply comp_assoc | idtac].
+  repeat destruct_dependent_sort; try first [easy | apply comp_assoc].
   symmetry.
   apply (fmap_comp (Functor := arity) f g h).
 Qed.
 
 Next Obligation.
-  case x, y, z, w; simpl; try easy; try apply comp_assoc_sym.
+  repeat destruct_dependent_sort; try first [easy | apply comp_assoc_sym].
   apply (fmap_comp (Functor := arity) f g h).
 Qed.
 
