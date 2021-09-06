@@ -1,0 +1,31 @@
+Things to do:
+
+- operads
+  - category of operators
+  - truncated version of the theorems and constructions in Lurie's _Higher Algebra_
+  - category of shapes
+    - do inner horns come from free/generic factorization on PRAs?
+    - operadic oidification and nerves in the category of shapes
+      - also homotopy coherent nerve
+    - is the category of shapes always the free strict O-category containing an O-algebra?
+  - slice/plus construction
+    - relationship to category of shapes
+- monads
+  - monads with arities
+    - expansion into an enriched category via semi-Cauchy completion
+  - simpler definition of Cruttwell/Shulman
+- LFP/LE categories
+  - single-object version?  maybe rephrase the reflector?
+  - what even is a finite limits theory with a single sort?
+- species
+  - V-colored version of a species from a plain one
+  - connection with monads via enrichment
+- P-resolutions as a form of generalized (co)limits
+- FOLDS
+  - morphisms between FOLDS theories
+  - classifying FOLDS theories
+    - classifying theory for walking equivalence objects
+    - classifying theory for walking adjunction objects
+- S-colored monoids
+  - secant/cosecant category
+  - relation to bo/ff factorization
