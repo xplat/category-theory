@@ -29,25 +29,25 @@ Ltac destruct_dependent_sort := match goal with
     lazymatch X with
       | Some _ => fail
       | None => fail
-      | _ => idtac "boo" X; destruct X
+      | _ => destruct X
     end
   | [ |- context[HomAddDependentSort _ _ _ ?X] ] =>
     lazymatch X with
       | Some _ => fail
       | None => fail
-      | _ => idtac "hiss" X; destruct X
+      | _ => destruct X
     end
   | [ H: context[HomAddDependentSort _ _ ?X ] |- _] =>
     lazymatch X with
       | Some _ => fail
       | None => fail
-      | _ => idtac "buu" X; destruct X
+      | _ => destruct X
     end
   | [ H: context[HomAddDependentSort _ _ _ ?X ] |- _] =>
     lazymatch X with
       | Some _ => fail
       | None => fail
-      | _ => idtac "hyss" X; destruct X
+      | _ => destruct X
     end
 end.
 
@@ -58,19 +58,15 @@ Global Program Instance HomAddDependentSort_Setoid `(C : Category) (arity: C ⟶
   : Setoid (HomAddDependentSort C arity x y) := {|
   equiv := match x with
     | None => match y with
-        | None => fun _ _ => unit
+        | None => fun _ _ => True
         | Some d => @equiv _ (arity d)
       end
     | Some c => match y with
-        | None => fun _ _ => unit
+        | None => fun _ _ => True
         | Some d => @equiv _ (homset c d)
       end
   end
 |}.
-
-Next Obligation.
-  equivalence. now repeat destruct_dependent_sort.
-Qed.
 
 (* automate away all the trivial cases *)
 Program Definition AddDependentSort_compose `(C : Category) (arity: C ⟶ Sets) (x y z : option C)
@@ -91,28 +87,28 @@ Program Definition AddDependentSort `(C : Category) (arity: C ⟶ Sets) : Catego
 
 Next Obligation.
   intros f0 f1 f0_eq_f1 g0 g1 g0_eq_g1.
-  repeat destruct_dependent_sort; try rewrite f0_eq_f1, g0_eq_g1; try easy; simpl.
-  transitivity (fmap[arity] f0 g1).
-  - now apply (proper_morphism).
-  - apply (fun k => k g1). now apply (fmap_respects (Functor := arity)).
+  repeat destruct_dependent_sort; try rewrite f0_eq_f1, g0_eq_g1; try easy; simpl in * |- *.
+  rewrite (proper_morphism _ _ _ g0_eq_g1).
+  apply (fun k => k g1).
+  now apply (fmap_respects (Functor := arity)).
 Qed.
 
 Next Obligation.
-  repeat destruct_dependent_sort; simpl; now try first [ apply id_left | apply (fmap_id (Functor := arity) f) ].
+  repeat destruct_dependent_sort; simpl; cat. apply (fmap_id (Functor := arity) f).
 Qed.
 
 Next Obligation.
-  repeat destruct_dependent_sort; solve [apply id_right | easy].
+  repeat destruct_dependent_sort; simpl; cat.
 Qed.
 
 Next Obligation.
-  repeat destruct_dependent_sort; try first [easy | apply comp_assoc].
+  repeat destruct_dependent_sort; auto; simpl; try easy; cat.
   symmetry.
   apply (fmap_comp (Functor := arity) f g h).
 Qed.
 
 Next Obligation.
-  repeat destruct_dependent_sort; try first [easy | apply comp_assoc_sym].
+  repeat destruct_dependent_sort; auto; simpl; try easy; cat.
   apply (fmap_comp (Functor := arity) f g h).
 Qed.
 
