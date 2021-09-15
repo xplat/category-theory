@@ -205,25 +205,133 @@ Inductive path1p (C : Category) (x: C) : C -> Type :=
   | path1p_nil : path1p C x x
   | path1p_trans {y z} : C y z -> path1p C x y -> path1p C x z.
 
-Program Definition vertex_from_horn C n k k_ok : @InnerHorn n k k_ok ~{ SSets }~> Nerve C -> ∀ (i : Fin (S n)), obj[C] :=
-  fun horn_incl i => @fobj (CategorialSimplex 0) C (transform horn_incl 0 (Monotonic.vertex n i)) 0.
+Program Definition vertex_in_horn n k k_ok : ∀ (i : Fin (S n)), fobj[ @InnerHorn n k k_ok ] 0 :=
+  fun i => Monotonic.vertex n i.
 Next Obligation.
-intros untrue.
-destruct i as [i i_ok].  destruct i.
-- apply (untrue (@exist _ _ n (le_n (S n)))).
-  + simpl.  intros untrue_too.  clear horn_incl.  rewrite <- untrue_too in *.  lia.
+intros nope.  destruct i as [i i_ok].  destruct i.
+- unshelve eapply nope.
+  + unshelve econstructor.
+    * exact n.
+    * apply le_refl.
+  + simpl.  intros <-.  lia.
   + intros [m m_ok].  simpl.  lia.
-- apply (untrue (@exist _ _ 0 (Nat.lt_0_succ n))).
-  + intros untrue_too.  simpl in untrue_too.  clear horn_incl.  clear untrue.  now rewrite <- untrue_too in *.
-  + intros m.  simpl.  lia.
-Qed.
+- unshelve eapply nope.
+  + unshelve econstructor.
+    * exact 0.
+    * apply Nat.lt_0_succ.
+  + simpl.  intros <-.  lia.
+  + simpl.  lia.
+Defined.
+
+Program Definition edge_in_horn n k k_ok : ∀ (i : Fin n), fobj[ @InnerHorn n k k_ok ] 1 :=
+  fun i => Monotonic.edge n i.
+Next Obligation.
+intros nope.  destruct i as [i i_ok].  destruct i.
+- unshelve eapply nope.
+  + unshelve econstructor.
+    * exact n.
+    * apply le_refl.
+  + simpl.  intros <-.  lia.
+  + intros [m m_ok].  simpl.  lia.
+- unshelve eapply nope.
+  + unshelve econstructor.
+    * exact 0.
+    * apply Nat.lt_0_succ.
+  + simpl.  intros <-.  lia.
+  + simpl.  lia.
+Defined.
+
+Program Definition vertex_from_horn C n k k_ok : @InnerHorn n k k_ok ~{ SSets }~> Nerve C -> ∀ (i : Fin (S n)), obj[C] :=
+  fun horn_incl i => @fobj (CategorialSimplex 0) C (transform horn_incl 0 (vertex_in_horn n k k_ok i)) 0.
+
+Program Definition edge_tail_from_horn C n k k_ok : @InnerHorn n k k_ok ~{ SSets }~> Nerve C -> ∀ (i : Fin n), obj[C] :=
+  fun horn_incl i => @fobj (CategorialSimplex 1) C (transform horn_incl 1 (edge_in_horn n k k_ok i)) 0.
+
+Program Definition edge_head_from_horn C n k k_ok : @InnerHorn n k k_ok ~{ SSets }~> Nerve C -> ∀ (i : Fin n), obj[C] :=
+  fun horn_incl i => @fobj (CategorialSimplex 1) C (transform horn_incl 1 (edge_in_horn n k k_ok i)) 1.
+
+Print fmap.
+Program Definition edge_from_horn C n k k_ok (horn_incl: @InnerHorn n k k_ok ~{ SSets }~> Nerve C) :
+    ∀ (i : Fin n), edge_tail_from_horn C n k k_ok horn_incl i ~{C}~> edge_head_from_horn C n k k_ok horn_incl i :=
+  fun i => @fmap (CategorialSimplex 1) C (transform horn_incl 1 (edge_in_horn n k k_ok i)) 0 1 _.
+
+Require Import EqdepFacts.
+Require Eqdep_dec.
+Print nat_ind.
+
+Definition le_pi : ∀ {x y : nat} (p1 p2: x <= y), p1 = p2.
+assert (∀ x y (p : x <= y) y' (q : x <= y'),
+y = y' → eq_dep nat (le x) y p y' q) as aux.
+{ fix FIX 3. intros x ? [|y p] ? [|y' q].
+- easy.
+- clear FIX. intros; exfalso; lia.
+- clear FIX. intros; exfalso; lia.
+- injection 1. intros Hy. now case (FIX x y p y' q Hy). }
+intros x y p q.
+now apply (Eqdep_dec.eq_dep_eq_dec (λ x y, eq_nat_dec x y)), aux.
+Defined.
+
+Program Definition coface_1_0 : 0 ~{Δ}~> 1 := {|
+  Monotonic.carrier := fun _ => 0;
+|}.
+Program Definition coface_1_1 : 0 ~{Δ}~> 1 := {|
+  Monotonic.carrier := fun _ => 1;
+|}.
+
 
 (*************************************** WORKS UNTIL HERE *****************************************************)
+
+Set Printing Implicit.
+Eval compute in (?[W]: ?[X] ~{ SSets }~> ?[Y]) ?[Z] ?[Q].
+
+Lemma arrows_preserve_objects : ∀ X Y (F : X ~{SSets}~> Y) x y (f : x ~{Δ}~> y) q (i : Fin (S x)),
+    fobj[F x q] i = fobj[F y q] i. *)
+easy.
+Qed.
+
+Lemma edge_head_from_horn_eq C n k k_ok (horn_incl : @InnerHorn n k k_ok ~{ SSets }~> Nerve C) (i: nat) i_ok1 i_ok2
+    : edge_head_from_horn C n k k_ok horn_incl (exist _ i i_ok1) = vertex_from_horn C n k k_ok horn_incl (exist _ i i_ok2).
+unfold vertex_from_horn.  unfold edge_head_from_horn.
+unfold vertex_in_horn.    unfold edge_in_horn.
+unfold Monotonic.vertex.  unfold Monotonic.edge.
+simpl.
+
 
 Definition partial_spine_from_horn C n k k_ok (horn_incl: @InnerHorn n k k_ok ~{ SSets }~> Nerve C) (i: nat) i_ok
     : path1p C (vertex_from_horn C n k k_ok horn_incl (exist _ 0 (Nat.lt_0_succ n))) (vertex_from_horn C n k k_ok horn_incl (exist _ i i_ok)).
 induction i.
-- simpl.  eapply path1p_nil.
+- simpl.  rewrite (le_pi i_ok (Nat.lt_0_succ n)).  now refine (path1p_nil C _).
+- eapply (@path1p_trans C _ ?[?stepping_stone]).
+  + epose (next_edge := edge_from_horn C n k k_ok horn_incl (exist _ i ?[?i_lt_n])).
+    simpl.
+    only [ i_lt_n ] : (simpl; lia).
+
+
+- pose (i_lt_Sn := ltac:(lia) : i < S n).
+  pose (i_lt_n := ltac:(lia) : i < n).
+  pose (c := vertex_from_horn C n k k_ok horn_incl (exist _ i i_lt_Sn)).
+  apply (@path1p_trans C _ c).
+  + simpl.
+    pose (w := Monotonic.edge n (exist _ i i_lt_n)).
+    unshelve epose (x := horn_incl 1 _).
+    * simpl.  apply (exist _ w).  intros untrue.  destruct i.
+      -- apply (untrue (exist _ n (le_n (S n)))).
+         ++ simpl.  intros untrue_too.  rewrite <- untrue_too in *.  lia.
+         ++ intros [m m_ok].  simpl.  lia.
+      -- apply (untrue (exist _ 0 (Nat.lt_0_succ n))).
+         ++ intros untrue_too.  simpl in untrue_too.
+            clear IHi.  clear c.  clear horn_incl.  clear untrue.  clear w.  clear i_lt_n.  clear i_lt_Sn.
+            now rewrite <- untrue_too in *.
+         ++ intros m.  simpl.  lia.
+    * pose (y := fobj[fobj[Nerve] C] 1).  hnf in y.
+      unshelve epose (z := @fmap (CategorialSimplex 1) C x (exist _ 0 (Nat.lt_0_succ 1)) (exist _ 1 (le_n 2)) (le_S 0 0 (le_n 0))).
+      simpl in z.
+      apply z.
+
+      * now apply IHi.
+Admitted.
+  + eapply path1p_trans. admit.
+  + apply IHi
 
 Definition spine_from_horn C n k k_ok : @InnerHorn n k k_ok ~{ SSets }~> Nerve C -> { x & {y & path1p C x y }}.
 intros horn_incl.  unshelve (esplit; esplit).
