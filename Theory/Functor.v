@@ -64,16 +64,39 @@ Notation "fmap[ F ]" := (@fmap _ _ F%functor _ _)
 
 Hint Rewrite @fmap_id : categories.
 
+Set Transparent Obligations.
 Program Instance Functor_Setoid {C D : Category} : Setoid (C ⟶ D) := {
   equiv := fun F G =>
-    (* Equality of objects in a category is taken to be isomorphism *)
-    { iso : ∀ x : C, F x ≅ G x
+    { equ : ∀ x : C, G x = F x
     & ∀ (x y : C) (f : x ~> y),
-        fmap[F] f ≈ from (iso y) ∘ fmap[G] f ∘ to (iso x) }
+        fmap[F] f ≈ fmap[G] f }
 }.
 Next Obligation.
   equivalence.
-  - isomorphism.
+  - unfold Functor_Setoid_obligation_1 in * |- *.  unfold Functor_Setoid_obligation_2 in * |- *.
+
+(*
+C: Category
+D: Category
+x, y: C ⟶ D
+x0: ∀ x0 : obj[C], fobj[y] x0 = fobj[x] x0
+e: ∀ (x1 y0 : obj[C]) (f : x1 ~{ C }~> y0),
+    fmap[x] f
+    ≈ eq_rect (fobj[y] y0) (λ H : obj[D], fobj[x] x1 ~{ D }~> H)
+        (eq_rect (fobj[y] x1) (λ H : obj[D], H ~{ D }~> fobj[y] y0) (fmap[y] f) (fobj[x] x1) (x0 x1))
+        (fobj[x] y0) (x0 y0)
+x1, y0: obj[C]
+f: x1 ~{ C }~> y0
+------------------------------------------------------------------------------------------------------------
+(1/1)
+fmap[y] f
+≈ eq_rect (fobj[x] y0) (λ H : obj[D], fobj[y] x1 ~{ D }~> H)
+    (eq_rect (fobj[x] x1) (λ H : obj[D], H ~{ D }~> fobj[x] y0) (fmap[x] f) (fobj[y] x1) (eq_sym (x0 x1)))
+    (fobj[y] y0) (eq_sym (x0 y0))
+*)
+
+
+    remember (fobj[x] x1) as it in * |- *.  rewrite (x0 x1) in e |- *.
     + exact (from (x0 x1)).
     + exact (to (x0 x1)).
     + apply iso_from_to.
