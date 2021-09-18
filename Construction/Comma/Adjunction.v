@@ -58,6 +58,8 @@ Definition πC := comma_proj2.
 
 Local Notation "⟨πD,πC⟩" := comma_proj (at level 100).
 
+(* XXX LATER -jcd *)
+(*
 Record lawvere_equiv := {
   lawvere_iso : F ↓ Id[C] ≅[Cat] Id[D] ↓ G;
 
@@ -803,9 +805,9 @@ Next Obligation.
   - abstract (clear; simpl; split; cat).
   - abstract (clear; simpl; split; cat).
 Defined.
-
+*)
 End AdjunctionComma.
-
+(*
 Theorem Adjunction_Comma `{F : D ⟶ C} `{G : C ⟶ D} :
   F ⊣ G  ↔  @lawvere_equiv _ _ F G.
 Proof.
@@ -827,3 +829,4 @@ Proof.
            (@lawvere_eqv_counit_fmap_unit _ _ _ _ H)
            (@lawvere_eqv_fmap_counit_unit _ _ _ _ H)).
 Qed.
+*)

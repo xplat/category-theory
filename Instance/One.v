@@ -34,6 +34,9 @@ Program Instance Cat_Terminal : @Terminal Cat := {
   one := Erase
 }.
 Next Obligation.
-  constructive; auto; try exact tt.
-  destruct (fmap[f] f0); auto.
+  unshelve esplit.
+  - intros v.  now destruct (f v), (g v).
+  - intros vx vy vf.  simpl.
+    destruct (f vx), (g vx), (f vy), (g vy).  simpl.
+    now destruct (fmap[f] vf), (fmap[g] vf).
 Qed.

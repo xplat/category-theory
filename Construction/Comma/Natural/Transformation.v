@@ -40,37 +40,51 @@ Program Definition Comma_Transform {C D : Category} {S T : D ⟶ C}
         (F : D ⟶ (S ↓ T))
         (proj1 : comma_proj1 ◯ F ≈[Cat] Id)
         (proj2 : comma_proj2 ◯ F ≈[Cat] Id) : S ⟹ T := {|
-  transform := fun X =>
-    fmap (to (`1 proj2 X)) ∘ `2 (F X) ∘ fmap (from (`1 proj1 X))
+  transform := fun X => `2 (F X)
 |}.
 Next Obligation.
-  rewrite !comp_assoc.
-  rewrite <- fmap_comp.
-  rewrite <- !comp_assoc.
-  rewrite <- fmap_comp.
-
-  spose (`2 proj1 _ _ f) as X0.
-  spose (`2 proj2 _ _ f) as X1.
-
-  rewrite <- (id_left f) at 1.
-  rewrite <- (iso_to_from (`1 proj2 y)).
-  rewrite <- !comp_assoc.
-  rewrite (comp_assoc _ f).
-  rewrites.
-  rewrite fmap_comp.
-  comp_left.
-
-  symmetry.
-  rewrite <- (id_right f) at 1.
-  rewrite <- (iso_to_from (`1 proj1 x)).
-  rewrite !comp_assoc.
-  rewrites.
-  rewrite fmap_comp.
-  comp_right.
-
-  exact (`2 (fmap[F] f)).
+  now rewrite (`1 proj1 X).
+Defined.
+Next Obligation.
+  now rewrite (`1 proj2 X).
+Defined.
+Next Obligation.
+  unfold Comma_Transform_obligation_1, Comma_Transform_obligation_2, eq_ind_r.
+  simpl.
+  destruct proj1 as [proj1o proj1a].
+  destruct proj2 as [proj2o proj2a].
+  simpl.
+  specialize proj1a with x y f.  specialize proj2a with x y f.
+  remember (proj1o x) as proj1x.  clear Heqproj1x.
+  remember (proj2o x) as proj2x.  clear Heqproj2x.
+  remember (proj1o y) as proj1y.  clear Heqproj1y.
+  remember (proj2o y) as proj2y.  clear Heqproj2y.
+  remember (fmap[F] f) as Ff.  destruct Ff as [[hFf tFf] eFf].  clear HeqFf.
+  remember (F x) as Fx.
+  remember (F y) as Fy.
+  destruct Fx as [[hFx tFx] aFx].  simpl in * |- *.
+  destruct proj1x, proj2x.  simpl in * |- *.
+  destruct Fy as [[hFy tFy] aFy].  simpl in * |- *.
+  destruct proj1y, proj2y.  simpl in * |- *.
+  rewrite proj1a, proj2a in eFf.  now rewrite eFf.
 Qed.
 Next Obligation.
-  symmetry.
-  apply Comma_Transform_obligation_1.
+  unfold Comma_Transform_obligation_1, Comma_Transform_obligation_2, eq_ind_r.
+  simpl.
+  destruct proj1 as [proj1o proj1a].
+  destruct proj2 as [proj2o proj2a].
+  simpl.
+  specialize proj1a with x y f.  specialize proj2a with x y f.
+  remember (proj1o x) as proj1x.  clear Heqproj1x.
+  remember (proj2o x) as proj2x.  clear Heqproj2x.
+  remember (proj1o y) as proj1y.  clear Heqproj1y.
+  remember (proj2o y) as proj2y.  clear Heqproj2y.
+  remember (fmap[F] f) as Ff.  destruct Ff as [[hFf tFf] eFf].  clear HeqFf.
+  remember (F x) as Fx.
+  remember (F y) as Fy.
+  destruct Fx as [[hFx tFx] aFx].  simpl in * |- *.
+  destruct proj1x, proj2x.  simpl in * |- *.
+  destruct Fy as [[hFy tFy] aFy].  simpl in * |- *.
+  destruct proj1y, proj2y.  simpl in * |- *.
+  rewrite proj1a, proj2a in eFf.  now rewrite eFf.
 Qed.

@@ -169,6 +169,8 @@ Arguments Lan {_ _} F {_ _}.
 Arguments LocalLeftKan {_ _} F {_} _.
 Arguments LocalLan {_ _} F {_} _ {_}.
 
+Require Import Category.Instance.Fun.
+
 (** From “All Concepts are Kan Extensions”, by Marina Christina Lehner:
 
     "A functor preserves a Kan extension when composing then extending is
@@ -176,11 +178,11 @@ Arguments LocalLan {_ _} F {_} _ {_}.
 
 Definition preserves_left_Kan `(L : E ⟶ F) :=
   ∀ {C} (G : C ⟶ E) {D} (K : C ⟶ D)
-    `{@LeftKan _ _ K E} `{@LeftKan _ _ K F}, L ◯ Lan K G ≈ Lan K (L ◯ G).
+    `{@LeftKan _ _ K E} `{@LeftKan _ _ K F}, L ◯ Lan K G ≅[ [D,F] ] Lan K (L ◯ G).
 
 Definition preserves_right_Kan `(R : E ⟶ F) :=
   ∀ {C} (G : C ⟶ E) {D} (K : C ⟶ D)
-    `{@RightKan _ _ K E} `{@RightKan _ _ K F}, R ◯ Ran K G ≈ Ran K (R ◯ G).
+    `{@RightKan _ _ K E} `{@RightKan _ _ K F}, R ◯ Ran K G ≅[ [D,F] ] Ran K (R ◯ G).
 
 (** "We show that left adjoints preserve left Kan extensions, while right
     adjoints will preserve right adjoints [sic]. These connections with
@@ -240,53 +242,33 @@ Qed.
 Theorem left_adjoints_preserve `(L : C ⟶ D) :
   ∀ R : D ⟶ C, L ⊣ R -> preserves_left_Kan L.
 Proof.
-  intros.
-  construct.
-  - isomorphism.
-    + apply X; simpl.
+  intros * is_Adj.  unfold preserves_left_Kan.
+  intros 𝒞 G 𝒟 K Lan_K_in_C Lan_K_in_D.
+  isomorphism.
+  - transform.
+    + intros 𝒹.
+      apply is_Adj; simpl.
       rewrite <- fobj_Compose.
-      apply H; simpl.
-      spose (left_adjoint_impl _ _ X G (Lan K (L ◯ G) ◯ K)) as X0.
+      apply Lan_K_in_C; simpl.
+      spose (left_adjoint_impl _ _ is_Adj G (Lan K (L ◯ G) ◯ K)) as X0.
       transitivity (R ◯ (Lan K (L ◯ G) ◯ K)).
         apply (to X0); simpl.
-        apply H0; simpl.
+        apply Lan_K_in_D; simpl.
         exact nat_id.
       now apply fun_comp_assoc.
-    + rewrite <- fobj_Compose.
-      apply H0; simpl.
-      spose (left_adjoint_impl _ _ X G (L ◯ Lan K G ◯ K)) as X0.
-      apply X0; simpl; clear X0.
-      transitivity (R ◯ L ◯ fobj[Lan _] G ◯ K). {
-        apply H; simpl.
-        transform.
-        - intros.
-          apply unit.
-        - simpl.
-          unfold unit.
-          rewrite <- to_adj_nat_l.
-          rewrite <- to_adj_nat_r.
-          rewrite id_left, id_right.
-          reflexivity.
-        - simpl.
-          unfold unit.
-          rewrite <- to_adj_nat_l.
-          rewrite <- to_adj_nat_r.
-          rewrite id_left, id_right.
-          reflexivity.
-      }
-      pose proof (@fun_comp_assoc_sym _ _ _ _ R L (Lan K G ◯ K)).
-      pose proof (@fun_comp_assoc_sym _ _ _ _ R (L ◯ Lan K G) K).
-      pose proof (@fun_comp_assoc_sym _ _ _ _ (R ◯ L) (Lan K G) K).
-      transitivity ((R ◯ L) ◯ ((fobj[Lan _] G) ◯ K)); auto.
-      transitivity (R ◯ (L ◯ ((fobj[Lan _] G) ◯ K))); auto.
-      transitivity (R ◯ ((L ◯ (fobj[Lan _] G)) ◯ K)).
-        apply whisker_left.
-        apply fun_comp_assoc.
-      exact nat_id.
     + simpl.
       admit.
     + simpl.
       admit.
+  - transform.
+    + intros 𝒹.
+      admit.
+    + simpl.
+      admit.
+    + simpl.
+      admit.
+  - simpl.
+    admit.
   - simpl.
     admit.
 Abort.

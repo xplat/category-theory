@@ -101,6 +101,8 @@ Next Obligation. proper. Qed.
 Next Obligation. cat. Qed.
 Next Obligation. cat. Qed.
 
+(* XXX do later -jcd *)
+(*
 Program Instance Comma_Iso {A : Category} {B : Category} {C : Category} :
   Proper (@Isomorphism Fun ==> @Isomorphism Fun ==> @Isomorphism Cat)
          (@Comma A B C).
@@ -110,7 +112,11 @@ Next Obligation.
     isomorphism; simpl.
     - apply Comma_Iso_to_Left; assumption.
     - apply Comma_Iso_from_Left; assumption.
-    - constructive; simpl.
+    - unshelve esplit.
+      + intros [[hd tl] ar].  simpl in ar |- *.
+        unfold Comma_Iso_to_Left_obligation_1, Comma_Iso_from_Left_obligation_1.  simpl.
+        rewrite (comp_assoc_sym ?[inky] ?[pinky] ?[blinky] ?[clyde]).
+          constructive; simpl.
       + exists (id, id); cat.
         rewrite <- comp_assoc; simpl;
         srewrite (iso_to_from X); cat.
@@ -155,3 +161,4 @@ Next Obligation.
     + clear; simpl; cat.
     + clear; simpl; split; cat.
 Qed.
+*)

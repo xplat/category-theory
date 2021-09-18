@@ -34,6 +34,7 @@ Record Isomorphism_FullyFaithful `(iso : C ≅ D) := {
   from_faithful : Faithful (from iso)
 }.
 
+(*
 Theorem Cat_Iso_FullyFaithful `(iso : C ≅ D) :
   let φ := to iso in
   let ψ := from iso in
@@ -150,3 +151,4 @@ Proof.
        comp_right;
        now apply (@fmap_respects C D (to iso))).
 Defined.
+*)

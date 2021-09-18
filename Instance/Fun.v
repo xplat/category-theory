@@ -147,6 +147,9 @@ Class WellPointed `{@Pointed C F} := {
     (F ⊳ point) ∙ from (nat_λ _) ≈ (point ⊲ F) ∙ from (nat_ρ _)
 }.
 
+(* untrue -jcd *)
+
+(*
 Theorem Functor_Setoid_Nat_Iso `(F : C ⟶ D) (G : C ⟶ D) :
   F ≅[Fun] G ↔ F ≈ G.
 Proof.
@@ -196,6 +199,78 @@ Defined.
 
 Definition iso_equiv {C D : Category} {f g : C ⟶ D} :
   f ≅[Fun] g -> f ≈ g := fst (Functor_Setoid_Nat_Iso _ _).
+*)
 
-Definition equiv_iso {C D : Category} {f g : C ⟶ D} :
-  f ≈ g -> f ≅[Fun] g := snd (Functor_Setoid_Nat_Iso _ _).
+Definition equiv_iso {C D : Category} {f g : C ⟶ D} : f ≈ g -> f ≅[Fun] g.
+Proof.
+  intros X.
+  destruct X as [eqo eqf].
+  isomorphism; simpl; intros.
+  - transform; simpl.
+    + intros x.  apply (eq_rect (f x) (fun o => f x ~> o)).
+      * now apply id.
+      * now apply eqo.
+    + specialize eqf with x y f0.
+      remember (fmap[f] f0) as ff0.
+      remember (fmap[g] f0) as gf0.
+      clear Heqff0 Heqgf0.
+      simpl.
+      remember (eqo x) as eqx.  remember (eqo y) as eqy.
+      clear Heqeqx Heqeqy.
+      remember (f x) as fx.  remember (f y) as fy.
+      remember (g x) as gx.  remember (g y) as gy.
+      destruct eqx, eqy.  simpl in eqf |- *.
+      rewrite id_left.  now rewrite id_right.
+    + specialize eqf with x y f0.  simpl in eqf |- *.
+      remember (fmap[f] f0) as ff0.
+      remember (fmap[g] f0) as gf0.
+      clear Heqff0 Heqgf0.
+      simpl.
+      remember (eqo x) as eqx.  remember (eqo y) as eqy.
+      clear Heqeqx Heqeqy.
+      remember (f x) as fx.  remember (f y) as fy.
+      remember (g x) as gx.  remember (g y) as gy.
+      destruct eqx, eqy.  simpl in eqf |- *.
+      rewrite id_left.  now rewrite id_right.
+
+  - transform; simpl.
+    + intros x.  apply (eq_rect (f x) (fun o => o ~> f x)).
+      * now apply id.
+      * now apply eqo.
+    + specialize eqf with x y f0.
+      remember (fmap[f] f0) as ff0.
+      remember (fmap[g] f0) as gf0.
+      clear Heqff0 Heqgf0.
+      simpl.
+      remember (eqo x) as eqx.  remember (eqo y) as eqy.
+      clear Heqeqx Heqeqy.
+      remember (f x) as fx.  remember (f y) as fy.
+      remember (g x) as gx.  remember (g y) as gy.
+      destruct eqx, eqy.  simpl in eqf |- *.
+      rewrite id_left.  now rewrite id_right.
+    + specialize eqf with x y f0.  simpl in eqf |- *.
+      remember (fmap[f] f0) as ff0.
+      remember (fmap[g] f0) as gf0.
+      clear Heqff0 Heqgf0.
+      simpl.
+      remember (eqo x) as eqx.  remember (eqo y) as eqy.
+      clear Heqeqx Heqeqy.
+      remember (f x) as fx.  remember (f y) as fy.
+      remember (g x) as gx.  remember (g y) as gy.
+      destruct eqx, eqy.  simpl in eqf |- *.
+      rewrite id_left.  now rewrite id_right.
+  - simpl.  clear eqf.
+    rewrite fmap_id.
+    remember (eqo A) as eqA.
+    clear HeqeqA.
+    remember (f A) as fA.  remember (g A) as gA.
+    destruct eqA.  simpl.
+    now rewrite id_left.
+  - simpl.  clear eqf.
+    rewrite fmap_id.
+    remember (eqo A) as eqA.
+    clear HeqeqA.
+    remember (f A) as fA.  remember (g A) as gA.
+    destruct eqA.  simpl.
+    now rewrite id_left.
+Qed.

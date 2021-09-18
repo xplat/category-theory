@@ -29,25 +29,25 @@ Ltac destruct_dependent_sort := match goal with
     lazymatch X with
       | Some _ => fail
       | None => fail
-      | _ => destruct X
+      | _ => destruct X in * |- *
     end
   | [ |- context[HomAddDependentSort _ _ _ ?X] ] =>
     lazymatch X with
       | Some _ => fail
       | None => fail
-      | _ => destruct X
+      | _ => destruct X in * |- *
     end
   | [ H: context[HomAddDependentSort _ _ ?X ] |- _] =>
     lazymatch X with
       | Some _ => fail
       | None => fail
-      | _ => destruct X
+      | _ => destruct X in * |- *
     end
   | [ H: context[HomAddDependentSort _ _ _ ?X ] |- _] =>
     lazymatch X with
       | Some _ => fail
       | None => fail
-      | _ => destruct X
+      | _ => destruct X in * |- *
     end
 end.
 

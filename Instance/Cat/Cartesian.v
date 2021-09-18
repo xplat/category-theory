@@ -29,25 +29,56 @@ Next Obligation.
   rename x into A.
   rename y into B.
   rename z into C.
-  proper.
-  isomorphism; simpl; split.
-  - apply x2.
-  - apply x1.
-  - apply (from (x2 _)).
-  - apply (from (x1 _)).
-  - apply iso_to_from.
-  - apply iso_to_from.
-  - apply iso_from_to.
-  - apply iso_from_to.
-  - apply e0.
-  - apply e.
+  intros F G [FeqGo FeqGa] I J [IeqJo IeqJa].
+  simpl. unshelve esplit.
+  - intros x.  now rewrite !FeqGo, !IeqJo.
+  - intros x y f.
+    specialize FeqGa with x y f.  specialize IeqJa with x y f.
+    simpl.
+    remember (FeqGo x) as FeqGx.  remember (FeqGo y) as FeqGy.
+    remember (IeqJo x) as IeqJx.  remember (IeqJo y) as IeqJy.
+    clear HeqFeqGx HeqFeqGy HeqIeqJx HeqIeqJy.
+    remember (fmap[F] f) as Ff.  clear HeqFf.  remember (F x) as Fx.  remember (F y) as Fy.
+    remember (fmap[G] f) as Gf.  clear HeqGf.  remember (G x) as Gx.  remember (G y) as Gy.
+    remember (fmap[I] f) as If.  clear HeqIf.  remember (I x) as Ix.  remember (I y) as Iy.
+    remember (fmap[J] f) as Jf.  clear HeqJf.  remember (J x) as Jx.  remember (J y) as Jy.
+    destruct FeqGx, FeqGy, IeqJx, IeqJy.  simpl in FeqGa, IeqJa |- *.  easy.
 Qed.
 Next Obligation.
   rename x into A.
   rename y into B.
   rename z into C.
-  split; intros; simplify.
-  - isomorphism.
+  rename f into F.
+  rename g into G.
+  rename h into K.
+  split; intros [KeqFGo KeqFGa].
+  - simpl.  split; unshelve esplit.
+    + intros x.  rewrite !KeqFGo.  simpl.  easy.
+    + intros x.  rewrite !KeqFGo.  simpl.  easy.
+    + intros x y f.  specialize KeqFGa with x y f.  unfold eq_ind_r.  simpl in KeqFGa |- *.
+      remember (KeqFGo x) as KeqFGx.  remember (KeqFGo y) as KeqFGy.
+      clear HeqKeqFGx HeqKeqFGy.
+      remember (fmap[F] f) as Ff.  clear HeqFf.  remember (F x) as Fx.  remember (F y) as Fy.
+      remember (fmap[G] f) as Gf.  clear HeqGf.  remember (G x) as Gx.  remember (G y) as Gy.
+      remember (fmap[K] f) as Kf.  clear HeqKf.  remember (K x) as Kx.  remember (K y) as Ky.
+      destruct Kf as [Kf1 Kf2].  destruct Kx as [Kx1 Kx2].  destruct Ky as [Ky1 Ky2].
+      destruct KeqFGa as [KeqFGa1 KeqFGa2].
+      simpl in * |- *.
+
+(* i am
+     _              _
+ ___| |_ _   _  ___| | __
+/ __| __| | | |/ __| |/ /
+\__ \ |_| |_| | (__|   <
+|___/\__|\__,_|\___|_|\_\ -jcd
+
+*)
+
+      destruct KeqFGx.
+        remember (fst Kx) as Kx1.  remember (fst Ky) as Ky1.
+       remember ( (Fy,Gy) ) as FGy.
+      destruct KeqFGy.
+    isomorphism.
     + exact (fst (to (x x0))).
     + exact (fst (from (x x0))).
     + exact (fst (iso_to_from (x x0))).

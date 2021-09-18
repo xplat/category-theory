@@ -35,8 +35,6 @@ Next Obligation.
   exists h.
   rewrites; cat.
 Defined.
-Next Obligation. constructive; simplify; simpl in *; cat. Qed.
-Next Obligation. constructive; simplify; simpl in *; cat. Qed.
 
 Program Definition Coslice `(C : Category) `(c : C) : Category := {|
   obj     := ∃ a : C, c ~> a;
@@ -59,5 +57,3 @@ Next Obligation.
   exists h; simpl.
   rewrites; cat.
 Defined.
-Next Obligation. constructive; simplify; simpl in *; cat. Qed.
-Next Obligation. constructive; simplify; simpl in *; cat. Qed.

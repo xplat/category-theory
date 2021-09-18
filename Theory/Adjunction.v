@@ -243,84 +243,137 @@ Notation "F ⊣ G" := (@Adjunction _ _ F G) (at level 59) : category_scope.
 Notation "adj[ A ]" := (@adj _ _ _ _ A _ _)
   (at level 9, format "adj[ A ]") : morphism_scope.
 
+Require Import Category.Instance.Fun.
+
 (* Wikipedia: "If the functor F : C ← D has two right adjoints G and G', then
    G and G' are naturally isomorphic. The same is true for left adjoints." *)
-
 Theorem right_adjoint_iso `(F : C ⟶ D) (G G' : D ⟶ C) :
-  F ⊣ G → F ⊣ G' → G ≈ G'.
+  F ⊣ G → F ⊣ G' → G ≅[ [D,C] ] G'.
 Proof.
-  intros.
-  construct.
-  - isomorphism.
-    + apply adj; simpl.
-      apply X; simpl.
-      exact id.
-    + apply adj; simpl.
-      apply X0; simpl.
+  intros is_Adj is_Adj'.
+  isomorphism.
+  - transform.
+    + intros x.
+      apply adj; simpl.
+      apply is_Adj; simpl.
       exact id.
     + simpl.
       rewrite <- to_adj_nat_l.
       rewrite <- from_adj_nat_l.
       rewrite id_left.
-      rewrite to_adj_comp_law.
-      rewrite from_adj_comp_law.
+      rewrite <- to_adj_nat_r.
+      rewrite <- from_adj_nat_r.
+      rewrite id_right.
       reflexivity.
     + simpl.
       rewrite <- to_adj_nat_l.
       rewrite <- from_adj_nat_l.
       rewrite id_left.
-      rewrite to_adj_comp_law.
-      rewrite from_adj_comp_law.
+      rewrite <- to_adj_nat_r.
+      rewrite <- from_adj_nat_r.
+      rewrite id_right.
+      reflexivity.
+- transform.
+    + intros x.
+      apply adj; simpl.
+      apply is_Adj'; simpl.
+      exact id.
+    + simpl.
+      rewrite <- to_adj_nat_l.
+      rewrite <- from_adj_nat_l.
+      rewrite id_left.
+      rewrite <- to_adj_nat_r.
+      rewrite <- from_adj_nat_r.
+      rewrite id_right.
+      reflexivity.
+    + simpl.
+      rewrite <- to_adj_nat_l.
+      rewrite <- from_adj_nat_l.
+      rewrite id_left.
+      rewrite <- to_adj_nat_r.
+      rewrite <- from_adj_nat_r.
+      rewrite id_right.
       reflexivity.
   - simpl.
     rewrite <- to_adj_nat_l.
     rewrite <- from_adj_nat_l.
     rewrite id_left.
-    rewrite <- to_adj_nat_l.
-    rewrite <- from_adj_nat_l.
-    rewrite <- to_adj_nat_r.
-    rewrite <- from_adj_nat_r.
-    rewrite id_right.
     rewrite to_adj_comp_law.
     rewrite from_adj_comp_law.
+    rewrite fmap_id.
+    reflexivity.
+  - simpl.
+    rewrite <- to_adj_nat_l.
+    rewrite <- from_adj_nat_l.
+    rewrite id_left.
+    rewrite to_adj_comp_law.
+    rewrite from_adj_comp_law.
+    rewrite fmap_id.
     reflexivity.
 Qed.
 
 Theorem left_adjoint_iso `(G : D ⟶ C) (F F' : C ⟶ D) :
-  F ⊣ G → F' ⊣ G → F ≈ F'.
+  F ⊣ G → F' ⊣ G → F ≅[ [C,D] ] F'.
 Proof.
-  intros.
-  construct.
-  - isomorphism.
-    + apply adj; simpl.
-      apply X0; simpl.
-      exact id.
-    + apply adj; simpl.
-      apply X; simpl.
+  intros is_Adj is_Adj'.
+  isomorphism.
+  - transform.
+    + intros x.
+      apply adj; simpl.
+      apply is_Adj'; simpl.
       exact id.
     + simpl.
       rewrite <- from_adj_nat_r.
       rewrite <- to_adj_nat_r.
       rewrite id_right.
-      rewrite from_adj_comp_law.
-      rewrite to_adj_comp_law.
+      rewrite <- from_adj_nat_l.
+      rewrite <- to_adj_nat_l.
+      rewrite id_left.
       reflexivity.
     + simpl.
       rewrite <- from_adj_nat_r.
       rewrite <- to_adj_nat_r.
       rewrite id_right.
-      rewrite from_adj_comp_law.
-      rewrite to_adj_comp_law.
+      rewrite <- from_adj_nat_l.
+      rewrite <- to_adj_nat_l.
+      rewrite id_left.
+      reflexivity.
+  - transform.
+    + intros x.
+      apply adj; simpl.
+      apply is_Adj; simpl.
+      exact id.
+    + simpl.
+      rewrite <- from_adj_nat_r.
+      rewrite <- to_adj_nat_r.
+      rewrite id_right.
+      rewrite <- from_adj_nat_l.
+      rewrite <- to_adj_nat_l.
+      rewrite id_left.
+      reflexivity.
+    + simpl.
+      rewrite <- from_adj_nat_r.
+      rewrite <- to_adj_nat_r.
+      rewrite id_right.
+      rewrite <- from_adj_nat_l.
+      rewrite <- to_adj_nat_l.
+      rewrite id_left.
       reflexivity.
   - simpl.
     rewrite <- from_adj_nat_r.
     rewrite <- to_adj_nat_r.
     rewrite id_right.
-    rewrite <- from_adj_nat_l.
-    rewrite <- to_adj_nat_l.
-    rewrite id_left.
     rewrite from_adj_comp_law.
     rewrite to_adj_comp_law.
+    rewrite fmap_id.
+    reflexivity.
+  - simpl.
+    rewrite <- from_adj_nat_r.
+    rewrite <- to_adj_nat_r.
+    rewrite id_right.
+    rewrite from_adj_comp_law.
+    rewrite to_adj_comp_law.
+    rewrite fmap_id.
     reflexivity.
 Qed.
 

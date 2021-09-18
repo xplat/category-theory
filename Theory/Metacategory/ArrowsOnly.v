@@ -477,6 +477,8 @@ Defined.
 
 Require Import Category.Instance.Cat.
 
+(* these categories aren't actually isomorphic only equivalent -jcd *)
+(*
 Program Instance Two_iso_2 : Category_from_Metacategory Two ≅ _2 := {
   to   := Two_to_Two;
   from := Two_from_Two
@@ -490,7 +492,9 @@ Next Obligation.
   unshelve eexists; intros.
     induction x using object_Two_rect;
     destruct x; simpl in H; subst.
-    { isomorphism; simpl.
+    { unfold Two_2_object.  unfold _2_Two_object.  simpl.
+      unfold _2_Two_object_obligation_1.  unfold _2_Two_object_obligation_2.  simpl.
+   isomorphism; simpl.
       - construct; [exact 0%N|..]; auto.
       - construct; [exact 0%N|..]; auto.
       - reflexivity.
@@ -507,6 +511,7 @@ Next Obligation.
   simpl in H, H0, H1; subst;
   vm_compute; reflexivity.
 Qed.
+*)
 
 Local Obligation Tactic := simpl; intros.
 

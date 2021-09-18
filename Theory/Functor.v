@@ -65,90 +65,59 @@ Notation "fmap[ F ]" := (@fmap _ _ F%functor _ _)
 Hint Rewrite @fmap_id : categories.
 
 Set Transparent Obligations.
+Print eq_rect.
+
+Lemma swap_eq_rect : ∀ A (x y : A) (P : A -> Type) (f : P x) (g : P y) (e : x = y) (r : ∀ {z}, P z -> P z -> Type),
+  r (eq_rect x P f y e) g -> r f (eq_rect y P g x (eq_sym e)).
+Proof.  intros * hyp.  destruct e.  now simpl in hyp |- *.  Qed.
+
 Program Instance Functor_Setoid {C D : Category} : Setoid (C ⟶ D) := {
   equiv := fun F G =>
-    { equ : ∀ x : C, G x = F x
+    { equ : ∀ x : C, F x = G x
     & ∀ (x y : C) (f : x ~> y),
-        fmap[F] f ≈ fmap[G] f }
+        @eq_rect obj[D] (F x) (fun o => o ~> G y) (@eq_rect obj[D] (F y) (fun o => F x ~> o) (fmap[F] f) (G y) (equ y)) (G x) (equ x) ≈ fmap[G] f };
+  setoid_equiv := {|
+    Equivalence_Reflexive := ?[?refl];
+    Equivalence_Symmetric := ?[?sym];
+    Equivalence_Transitive := ?[?trans];
+  |};
 }.
 Next Obligation.
-  equivalence.
-  - unfold Functor_Setoid_obligation_1 in * |- *.  unfold Functor_Setoid_obligation_2 in * |- *.
-
-(*
-C: Category
-D: Category
-x, y: C ⟶ D
-x0: ∀ x0 : obj[C], fobj[y] x0 = fobj[x] x0
-e: ∀ (x1 y0 : obj[C]) (f : x1 ~{ C }~> y0),
-    fmap[x] f
-    ≈ eq_rect (fobj[y] y0) (λ H : obj[D], fobj[x] x1 ~{ D }~> H)
-        (eq_rect (fobj[y] x1) (λ H : obj[D], H ~{ D }~> fobj[y] y0) (fmap[y] f) (fobj[x] x1) (x0 x1))
-        (fobj[x] y0) (x0 y0)
-x1, y0: obj[C]
-f: x1 ~{ C }~> y0
-------------------------------------------------------------------------------------------------------------
-(1/1)
-fmap[y] f
-≈ eq_rect (fobj[x] y0) (λ H : obj[D], fobj[y] x1 ~{ D }~> H)
-    (eq_rect (fobj[x] x1) (λ H : obj[D], H ~{ D }~> fobj[x] y0) (fmap[x] f) (fobj[y] x1) (eq_sym (x0 x1)))
-    (fobj[y] y0) (eq_sym (x0 y0))
-*)
-
-
-    remember (fobj[x] x1) as it in * |- *.  rewrite (x0 x1) in e |- *.
-    + exact (from (x0 x1)).
-    + exact (to (x0 x1)).
-    + apply iso_from_to.
-    + apply iso_to_from.
-  - simpl.
-    rewrite e.
-    rewrite !comp_assoc.
-    rewrite iso_to_from, id_left.
-    rewrite <- comp_assoc.
-    rewrite iso_to_from, id_right.
-    reflexivity.
-  - isomorphism.
-    + apply (to (x0 x2) ∘ to (x1 x2)).
-    + apply (from (x1 x2) ∘ from (x0 x2)).
-    + rewrite <- !comp_assoc.
-      rewrite (comp_assoc (x1 x2)).
-      rewrite iso_to_from, id_left.
-      apply iso_to_from.
-    + rewrite <- !comp_assoc.
-      rewrite (comp_assoc (x0 x2)⁻¹).
-      rewrite iso_from_to, id_left.
-      apply iso_from_to.
-  - simpl.
-    rewrite !comp_assoc.
-    rewrite <- (comp_assoc _ (x0 y0)⁻¹).
-    rewrite <- (comp_assoc _ ((x0 y0)⁻¹ ∘ _)).
-    rewrite <- e.
-    apply e0.
+intros F G [equ e].  unshelve esplit.
+- easy.
+- intros x y f.  specialize e with x y f.
+  apply symmetry.
+  remember (fmap[F] f) as Ff.
+  remember (fmap[G] f) as Gf.
+  clear HeqGf HeqFf.
+  remember (fobj[F]) as oF.
+  remember (fobj[G]) as oG.
+  remember (equ x) as equx.
+  remember (equ y) as equy.
+  clear Heqequx Heqequy.
+  remember (oF x) as Fx.
+  remember (oF y) as Fy.
+  remember (oG x) as Gx.
+  remember (oG y) as Gy.
+  destruct equx.
+  destruct equy.
+  now simpl in e |- *.
 Qed.
-
-Lemma fun_equiv_to_fmap {C D : Category} {F G : C ⟶ D} (eqv : F ≈ G) :
-  ∀ (x y : C) (f : x ~> y),
-    to (``eqv y) ∘ fmap[F] f ≈ fmap[G] f ∘ to (``eqv x).
-Proof.
-  intros.
-  rewrite <- id_right.
-  rewrite ((`2 eqv) _ _).
-  rewrite !comp_assoc.
-  rewrite iso_to_from.
-  now cat.
-Qed.
-
-Lemma fun_equiv_fmap_from {C D : Category} {F G : C ⟶ D} (eqv : F ≈ G) :
-  ∀ (x y : C) (f : x ~> y),
-    fmap[F] f ∘ from (``eqv x) ≈ from (``eqv y) ∘ fmap[G] f.
-Proof.
-  intros.
-  rewrite <- id_left.
-  rewrite ((`2 eqv) _ _).
-  rewrite <- !comp_assoc.
-  rewrite iso_to_from.
-  now cat.
+Next Obligation.
+intros F G H [FeqGo FeqGa] [GeqHo GeqHa].  unshelve esplit.
+- intros x.  transitivity (G x); easy.
+- intros x y f.  specialize FeqGa with x y f.  specialize GeqHa with x y f.
+  simpl.
+  remember (fmap[F] f) as Ff.  remember (fmap[G] f) as Gf.  remember (fmap[H] f) as Hf.
+  clear HeqFf HeqGf HeqHf.
+  remember (fobj[F]) as oF.  remember (fobj[G]) as oG.  remember (fobj[H]) as oH.
+  remember (FeqGo x) as FeqGx.  remember (FeqGo y) as FeqGy.
+  remember (GeqHo x) as GeqHx.  remember (GeqHo y) as GeqHy.
+  clear HeqFeqGx HeqFeqGy HeqGeqHx HeqGeqHy.
+  remember (oF x) as Fx.  remember (oG x) as Gx.  remember (oH x) as Hx.
+  remember (oF y) as Fy.  remember (oG y) as Gy.  remember (oH y) as Hy.
+  destruct FeqGx.  destruct GeqHx.  destruct FeqGy.  destruct GeqHy.
+  simpl in FeqGa, GeqHa |- *.  now apply (transitivity (y := Gf)).
 Qed.
 
 Ltac constructive :=
@@ -201,29 +170,26 @@ Notation "F ◯ G" := (Compose F%functor G%functor)
 Program Instance Compose_respects {C D E : Category} :
   Proper (equiv ==> equiv ==> equiv) (@Compose C D E).
 Next Obligation.
-  proper.
-  - isomorphism; simpl; intros.
-    + exact (fmap (to (x1 x3)) ∘ to (x2 (x0 x3))).
-    + exact (from (x2 (x0 x3)) ∘ fmap (from (x1 x3))).
-    + rewrite <- !comp_assoc.
-      rewrite (comp_assoc (x2 (x0 x3))).
-      rewrite iso_to_from, id_left.
-      rewrite <- fmap_comp.
-      rewrite iso_to_from; cat.
-    + rewrite <- !comp_assoc.
-      rewrite (comp_assoc (fmap _)).
-      rewrite <- fmap_comp.
-      rewrite iso_from_to, fmap_id, id_left.
-      rewrite iso_from_to; cat.
-  - simpl.
-    rewrite e0, e.
-    rewrite <- !comp_assoc.
-    rewrite (comp_assoc (fmap _)).
-    rewrite <- fmap_comp.
-    rewrite (comp_assoc (fmap _)).
-    rewrite <- fmap_comp.
-    rewrite !comp_assoc.
-    reflexivity.
+  simpl.  intros F G [FeqGo FeqGa].  simpl.  intros I J [IeqJo IeqJa].  simpl.  unshelve esplit.
+  - intros x.  rewrite IeqJo.  now rewrite FeqGo.
+  - intros x y f.  simpl.  specialize IeqJa with x y f.
+    remember (fmap[I] f) as If.  remember (fmap[J] f) as Jf.  clear HeqIf HeqJf.
+    remember (fobj[I]) as Io.  remember (fobj[J]) as Jo.
+    remember (IeqJo x) as IeqJx.  remember (IeqJo y) as IeqJy.
+    clear HeqIeqJx HeqIeqJy.
+    remember (Io x) as Ix.  remember (Jo x) as Jx.
+    remember (Io y) as Iy.  remember (Jo y) as Jy.
+    destruct IeqJx.  destruct IeqJy.  unfold eq_ind_r.  simpl in IeqJa |- *.
+    rewrite <- IeqJa.
+    specialize FeqGa with Ix Iy If.
+    remember (fmap[F] If) as FIf.  remember (fmap[G] If) as GIf.  clear HeqFIf HeqGIf.
+    remember (fobj[F]) as Fo.  remember (fobj[G]) as Go.
+    remember (FeqGo Ix) as FeqGIx.  remember (FeqGo Iy) as FeqGIy.
+    clear HeqFeqGIx HeqFeqGIy.
+    remember (Fo Ix) as FIx.  remember (Go Ix) as GIx.
+    remember (Fo Iy) as FIy.  remember (Go Iy) as GIy.
+    destruct FeqGIx.  destruct FeqGIy.
+    now simpl.
 Qed.
 
 Corollary fobj_Compose `(F : D ⟶ E) `(G : C ⟶ D) {x} :
